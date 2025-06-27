@@ -1,4 +1,4 @@
-# 🤖 ChatBot de Hotelería con IA - Sistema Profesional
+# 🤖 ChatBot de Hotelería con IA
 
 Un **sistema de chatbot inteligente para hotelería** de nivel enterprise que utiliza IA avanzada para responder consultas sobre servicios, habitaciones, restaurantes y más. Diseñado para ser **100% reutilizable** para cualquier hotel cambiando solo los documentos de conocimiento.
 
