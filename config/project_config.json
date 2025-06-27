@@ -1,0 +1,34 @@
+{
+  "project": {
+    "name": "ChatBot de Hotelería",
+    "version": "1.0.0",
+    "description": "Sistema de chatbot inteligente para hotelería con IA avanzada",
+    "created": "2025-06-25"
+  },
+  "directories": {
+    "data": "data",
+    "models": "data/models",
+    "reports": "reports",
+    "logs": "logs",
+    "config": "config",
+    "documentos": "documentos",
+    "src": "src"
+  },
+  "files": {
+    "analytics": "data/analytics.json",
+    "analytics_db": "data/analytics.db",
+    "training_config": "config/entrenamiento_config.json",
+    "main_log": "logs/bot.log"
+  },
+  "testing": {
+    "reports_dir": "reports",
+    "report_prefix": "test_report_",
+    "max_reports_keep": 10
+  },
+  "features": {
+    "ai_enabled": true,
+    "testing_enabled": true,
+    "analytics_enabled": true,
+    "logging_enabled": true
+  }
+}
