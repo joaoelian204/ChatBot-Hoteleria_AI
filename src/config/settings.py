@@ -37,6 +37,10 @@ class Settings:
     MODELO_EMBEDDINGS = os.getenv(
         'MODELO_EMBEDDINGS', 'sentence-transformers/all-mpnet-base-v2')
 
+    # Configuración de base de datos - SIEMPRE ACTIVA
+    # El sistema usa SQLite como método principal de almacenamiento
+    USE_DATABASE = True  # Fijo en True - Base de datos es el método por defecto
+
     # Configuración del bot
     ENABLE_RICH_RESPONSES = os.getenv(
         'ENABLE_RICH_RESPONSES', 'true').lower() == 'true'
@@ -46,9 +50,9 @@ class Settings:
     # Directorios
     DOCUMENTOS_DIR = project_root / "documentos"
     CONFIG_FILE = project_root / "config" / "entrenamiento_config.json"
-    ANALYTICS_FILE = project_root / "data" / "analytics.json"
-    FEEDBACK_FILE = project_root / "data" / "feedback.json"
-    USAGE_STATS_FILE = project_root / "data" / "usage_stats.json"
+    ANALYTICS_FILE = project_root / "src" / "data" / "analytics.json"
+    FEEDBACK_FILE = project_root / "src" / "data" / "feedback.json"
+    USAGE_STATS_FILE = project_root / "src" / "data" / "usage_stats.json"
 
     # Configuración de cache
     CACHE_DURATION_HOURS = int(os.getenv('CACHE_DURATION_HOURS', 24))

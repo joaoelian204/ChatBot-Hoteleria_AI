@@ -244,17 +244,21 @@ El módulo configura automáticamente la siguiente estructura:
 
 ```
 proyecto/
-├── documentos/              # 📄 Documentos del hotel
+├── src/data/                # � Bases de datos centralizadas
+│   ├── hotel_content.db     # 🏨 Base de datos principal del hotel
+│   ├── analytics.db         # 📈 Base de datos de análisis
+│   └── models/              # 🤖 Modelos de IA entrenados
 ├── config/                  # ⚙️ Archivos de configuración
 │   └── entrenamiento_config.json
-├── data/                    # 📊 Datos de analytics
-│   ├── analytics.json
-│   ├── feedback.json
-│   └── usage_stats.json
 ├── logs/                    # 📝 Archivos de log
 │   └── bot.log
 └── .env                     # 🔐 Variables de entorno
 ```
+
+**Cambios importantes**:
+- ✅ **Eliminada carpeta `documentos/`**: El conocimiento se gestiona vía BD
+- ✅ **Centralizada carpeta `src/data/`**: Todas las bases de datos en un lugar
+- ✅ **Arquitectura moderna**: Basada en SQLite para mejor rendimiento
 
 ## 🔍 Validación de Configuración
 

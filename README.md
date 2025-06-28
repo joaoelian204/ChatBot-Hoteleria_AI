@@ -1,6 +1,6 @@
 # 🤖 ChatBot de Hotelería con IA
 
-Un **sistema de chatbot inteligente para hotelería** de nivel enterprise que utiliza IA avanzada para responder consultas sobre servicios, habitaciones, restaurantes y más. Diseñado para ser **100% reutilizable** para cualquier hotel cambiando solo los documentos de conocimiento.
+Un **sistema de chatbot inteligente para hotelería** de nivel enterprise que utiliza IA avanzada para responder consultas sobre servicios, habitaciones, restaurantes y más. Diseñado para ser **100% reutilizable** para cualquier hotel cambiando solo los datos en la base de datos.
 
 ## 🌟 Características Principales
 
@@ -9,10 +9,11 @@ Un **sistema de chatbot inteligente para hotelería** de nivel enterprise que ut
 - **Búsqueda semántica**: Vectorstore con FAISS para respuestas precisas
 - **Carga perezosa**: Optimización de memoria con lazy loading
 - **Cache inteligente**: Respuestas rápidas para preguntas frecuentes
-- **Fallback robusto**: Sistema de respuestas por defecto bien implementado
+- **Sistema modularizado**: Arquitectura de servicios especializados
 
-### 🏗️ **Arquitectura Profesional**
-- **Modular**: Separación clara de responsabilidades
+### 🏗️ **Arquitectura Profesional Modularizada**
+- **Servicios especializados**: Cada funcionalidad en su módulo
+- **Base de datos centralizada**: SQLite como fuente única de verdad
 - **Escalable**: Manejo de concurrencia y múltiples usuarios
 - **Configurable**: Variables de entorno para personalización
 - **Mantenible**: Código limpio con type hints y documentación
@@ -22,13 +23,14 @@ Un **sistema de chatbot inteligente para hotelería** de nivel enterprise que ut
 - **Tests de estrés**: Evaluación bajo alta carga
 - **Tests concurrentes**: Validación de acceso simultáneo
 - **Métricas detalladas**: Análisis completo de rendimiento
-- **Reportes estructurados**: JSON con timestamp y análisis
+- **Tests de modularización**: Verificación de servicios independientes
 
 ### 🛡️ **Seguridad y Validaciones**
 - **Protección contra spam**: Rate limiting por usuario
 - **Sanitización de texto**: Prevención de inyecciones
 - **Validación de entrada**: Múltiples capas de seguridad
 - **Logging completo**: Auditoría de todas las operaciones
+- **Manejo robusto de errores**: Sistema tolerante a fallos
 
 ### 📊 **Analytics y Monitoreo**
 - **Base de datos SQLite**: Almacenamiento persistente
@@ -38,25 +40,42 @@ Un **sistema de chatbot inteligente para hotelería** de nivel enterprise que ut
 
 ## 🚀 Reutilización para Otros Hoteles
 
-### ✅ **100% Reutilizable - Solo Cambia los Documentos**
+### ✅ **100% Reutilizable - Solo Modifica la Base de Datos**
 
-Este sistema está diseñado para ser **completamente reutilizable** para cualquier hotel. Solo necesitas cambiar los archivos en la carpeta `documentos/`:
+Este sistema está diseñado para ser **completamente reutilizable** para cualquier hotel. El conocimiento se gestiona centralmente desde la base de datos SQLite:
 
 ```
-documentos/
-├── hotel_info.txt          # Información específica del hotel
-├── habitaciones_precios.txt # Tipos de habitaciones y precios
-├── restaurantes_menus.txt   # Información de restaurantes
-├── amenidades_actividades.txt # Servicios y actividades
-└── politicas.txt           # Políticas del hotel
+src/
+├── data/
+│   ├── hotel_content.db        # 📊 Base de datos principal con contenido del hotel
+│   └── analytics.db            # 📈 Base de datos de análisis y métricas
+├── database/
+│   ├── services/               # 🔧 Servicios modulares especializados
+│   │   ├── room_service.py     #    • Gestión de habitaciones
+│   │   ├── amenities_service.py#    • Servicios y amenidades
+│   │   ├── contact_service.py  #    • Información de contacto
+│   │   ├── price_service.py    #    • Búsquedas por precio
+│   │   └── welcome_service.py  #    • Mensajes de bienvenida
+│   └── fallback_main.py        # 🎯 Orquestador modular
+└── models/                     # 🤖 Modelos de IA entrenados
+    └── training_log.json       # 📝 Log de entrenamiento
 ```
+```
+
+**Ventajas de la arquitectura modularizada**:
+- ✅ **Gestión centralizada**: Todo el conocimiento en base de datos SQLite
+- ✅ **Servicios especializados**: Cada funcionalidad en su módulo independiente
+- ✅ **Consultas avanzadas**: SQL para búsquedas complejas  
+- ✅ **Integridad de datos**: Validaciones y consistencia automática
+- ✅ **Escalabilidad**: Mejor rendimiento y mantenibilidad
+- ✅ **Testing granular**: Cada servicio puede probarse independientemente
 
 ### 🔄 **Proceso de Migración para Nuevo Hotel**
 
 1. **Clonar el proyecto**
    ```bash
    git clone <tu-repositorio>
-   cd ejerciico_api
+   cd chatBot-Hoteleria
    ```
 
 2. **Configurar variables de entorno**
@@ -65,10 +84,12 @@ documentos/
    # Editar .env con datos del nuevo hotel
    ```
 
-3. **Reemplazar documentos**
+3. **Personalizar base de datos**
    ```bash
-   # Reemplazar todos los archivos en documentos/
-   # con la información específica del nuevo hotel
+   # Editar contenido en src/data/hotel_content.db
+   # usando scripts SQL o herramientas de BD
+   # Para poblar con datos del nuevo hotel
+   python tools/populate_hotel_data.py  # Script helper
    ```
 
 4. **Obtener token de Telegram**
@@ -76,12 +97,18 @@ documentos/
    - Crea un nuevo bot con `/newbot`
    - Copia el token a `.env`
 
-5. **Entrenar el sistema**
+5. **Verificar sistema modular**
    ```bash
-   python src/main.py --mode train
+   python src/main.py --check    # Verificar configuración
+   python -m database.fallback_main  # Test modularización
    ```
 
-6. **Iniciar el bot**
+6. **Inicializar sistema**
+   ```bash
+   python src/main.py --mode train  # Entrenar con nuevos datos
+   ```
+
+7. **Iniciar el bot**
    ```bash
    python src/main.py --mode bot
    ```
@@ -101,7 +128,7 @@ documentos/
 ```bash
 # Clonar el repositorio
 git clone <tu-repositorio>
-cd ejerciico_api
+cd chatBot-Hoteleria
 
 # Crear entorno virtual
 python -m venv venv
@@ -124,21 +151,30 @@ cp configuracion.env .env
 # - EMPRESA_DESCRIPCION: Descripción del hotel
 ```
 
-### 3. **Preparar documentos del hotel**
+### 3. **Configurar contenido del hotel**
 
-Reemplaza los archivos en `documentos/` con la información de tu hotel:
+El contenido del hotel se gestiona directamente en la base de datos SQLite (`src/data/hotel_content.db`):
 
-- **`hotel_info.txt`**: Información general, contacto, historia
-- **`habitaciones_precios.txt`**: Tipos de habitaciones, precios, servicios
-- **`restaurantes_menus.txt`**: Restaurantes, menús, horarios
-- **`amenidades_actividades.txt`**: Servicios, actividades, spa
-- **`politicas.txt`**: Políticas de reserva, check-in/out
+- **Información general**: Datos básicos, contacto, historia del hotel
+- **Habitaciones**: Tipos, precios, servicios incluidos  
+- **Restaurantes**: Menús, horarios, especialidades
+- **Servicios**: Spa, actividades, amenidades disponibles
+- **Políticas**: Reservas, check-in/out, cancelaciones
 
-### 4. **Entrenar el sistema**
+**Para modificar el contenido**:
+```bash
+# Usar herramientas SQLite para editar la BD
+sqlite3 src/data/hotel_content.db
+
+# O crear scripts de poblado personalizados
+python tools/populate_hotel_data.py
+```
+
+### 4. **Inicializar el sistema**
 
 ```bash
-# Entrenar con los documentos del hotel
-python src/main.py --mode train
+# El sistema se inicializa automáticamente con la BD
+python src/main.py --mode bot
 ```
 
 ## 🚀 Uso del Sistema
@@ -188,19 +224,34 @@ python -m src.testing.run_tests --report-only
 ## 📁 Arquitectura del Proyecto
 
 ```
-ejerciico_api/
+chatBot-Hoteleria/
 ├── src/                    # 🔧 Código fuente principal
 │   ├── ai/                 # 🧠 Módulos de IA y procesamiento
 │   │   ├── models.py       # Gestión de modelos de IA
-│   │   ├── vectorstore.py  # Búsqueda semántica
+│   │   ├── vectorstore.py  # Búsqueda semántica con BD
 │   │   ├── cache.py        # Cache inteligente
-│   │   ├── fallback_handler.py # Respuestas por defecto
-│   │   └── intent_detector.py # Detección de intenciones
+│   │   ├── fallback_handler.py # Proxy a BD y respuestas por defecto
+│   │   ├── intent_detector.py # Detección de intenciones
+│   │   └── text_generator.py # Generación de respuestas
 │   ├── bot/                # 🤖 Bot de Telegram y handlers
 │   │   ├── bot_main.py     # Bot principal
 │   │   └── callbacks.py    # Manejadores de eventos
 │   ├── config/             # ⚙️ Configuración del sistema
 │   │   └── settings.py     # Configuración centralizada
+│   ├── database/           # 🗄️ Capa de acceso a datos MODULARIZADA
+│   │   ├── services/       # 🔧 Servicios modulares especializados
+│   │   │   ├── basic_info_service.py    # Información básica y utilidades
+│   │   │   ├── welcome_service.py       # Mensajes de bienvenida
+│   │   │   ├── room_service.py          # Gestión de habitaciones
+│   │   │   ├── contact_service.py       # Información de contacto
+│   │   │   ├── facility_service.py      # Restaurantes y amenidades
+│   │   │   └── price_search_service.py  # Búsqueda por precios
+│   │   ├── connection.py   # Conexiones a BD
+│   │   ├── repository.py   # Repositorios de datos
+│   │   ├── adapter.py      # Adaptadores de BD
+│   │   └── fallback_main.py # Orquestador modular (importa servicios)
+│   ├── data/               # 💾 Bases de datos centralizadas
+│   │   └── hotel_content.db # Base de datos principal del hotel
 │   ├── testing/            # 🧪 Sistema de testing universal
 │   │   ├── test_suite.py   # Suite principal de tests
 │   │   ├── run_tests.py    # Ejecutor de tests
@@ -212,18 +263,10 @@ ejerciico_api/
 │   │   ├── logger.py       # Sistema de logging
 │   │   └── text_processor.py # Procesamiento de texto
 │   └── main.py             # 🚀 Script principal
-├── documentos/             # 📄 Documentos de conocimiento del hotel
-│   ├── hotel_info.txt      # Información general del hotel
-│   ├── habitaciones_precios.txt # Habitaciones y precios
-│   ├── restaurantes_menus.txt   # Restaurantes y menús
-│   ├── amenidades_actividades.txt # Servicios y actividades
-│   └── politicas.txt       # Políticas del hotel
 ├── config/                 # ⚙️ Archivos de configuración
 │   ├── entrenamiento_config.json # Configuración de entrenamiento
 │   └── README.md           # Documentación de configuración
 ├── scripts/                # 🔧 Scripts de utilidad
-├── data/                   # 💾 Datos generados (auto-gestionado)
-├── reports/                # 📋 Reportes de testing (auto-gestionado)
 ├── logs/                   # 📝 Archivos de log (auto-gestionado)
 ├── requirements.txt        # 📦 Dependencias del proyecto
 ├── configuracion.env       # 🔒 Template de variables de entorno
@@ -231,6 +274,12 @@ ejerciico_api/
 ├── README.md               # 📖 Esta documentación
 └── .gitignore              # 🚫 Configuración Git
 ```
+
+**Cambios principales en la arquitectura**:
+- ✅ **Eliminada carpeta `documentos/`**: Ya no se necesitan archivos de texto
+- ✅ **Nueva carpeta `src/data/`**: Bases de datos centralizadas
+- ✅ **Nueva carpeta `src/database/`**: Capa de acceso a datos profesional
+- ✅ **Fallback modernizado**: Ahora funciona como proxy a la base de datos
 
 ## 🎯 Comandos del Bot
 
@@ -345,9 +394,12 @@ python src/main.py --mode analytics
 
 ## 🔄 Actualización y Mantenimiento
 
-### **Actualización de Documentos**
+### **Actualización de Contenido del Hotel**
 ```bash
-# Reentrenar después de cambiar documentos
+# Actualizar contenido en la base de datos
+sqlite3 src/data/hotel_content.db "UPDATE hotel_info SET descripcion = 'Nueva descripción';"
+
+# Reentrenar después de cambios en BD
 python src/main.py --mode train
 ```
 
@@ -358,13 +410,16 @@ python src/main.py --mode train
 
 ### **Backup y Restauración**
 ```bash
-# Backup de configuración
+# Backup de configuración y base de datos
 cp .env .env.backup
-cp -r documentos/ documentos_backup/
+cp src/data/hotel_content.db src/data/hotel_content.db.backup
 
 # Restaurar configuración
 cp .env.backup .env
-cp -r documentos_backup/ documentos/
+cp src/data/hotel_content.db.backup src/data/hotel_content.db
+
+# Verificar integridad de la base de datos
+python -c "import sqlite3; print('BD OK') if sqlite3.connect('src/data/hotel_content.db').execute('SELECT 1').fetchone() else print('BD ERROR')"
 ```
 
 ## 🤝 Contribuir al Proyecto
@@ -403,12 +458,12 @@ cat .env | grep TELEGRAM_TOKEN
 # Verificar RAM disponible (necesita 4GB+)
 ```
 
-#### **Error: Documentos no encontrados**
+#### **Error: Base de datos no encontrada**
 ```bash
-# Verificar que existen archivos en documentos/
-ls documentos/
-# Reentrenar el sistema
-python src/main.py --mode train
+# Verificar que existe la base de datos
+ls -la src/data/hotel_content.db
+# Verificar integridad de la BD
+python -c "import sqlite3; conn=sqlite3.connect('src/data/hotel_content.db'); print(f'Tablas: {[t[0] for t in conn.execute(\"SELECT name FROM sqlite_master WHERE type=table\").fetchall()]}')"
 ```
 
 #### **Bot no responde**

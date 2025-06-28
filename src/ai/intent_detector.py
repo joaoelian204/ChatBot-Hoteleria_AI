@@ -1,19 +1,10 @@
 """
 Detector de intenciones del usuario
 """
-import re
-import unicodedata
 from typing import Dict, Tuple
 
 from utils.logger import logger
-
-
-def normalize_text_robust(text: str) -> str:
-    """Normalización robusta que maneja acentos, variaciones y sinónimos"""
-    text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('utf-8').lower()
-    text = re.sub(r'[^\w\s]', ' ', text)
-    text = re.sub(r'\s+', ' ', text).strip()
-    return text
+from utils.text_processor import normalize_text
 
 
 def get_intent_patterns() -> Dict[str, list]:
@@ -76,10 +67,11 @@ def get_intent_patterns() -> Dict[str, list]:
 def detect_intent(question: str) -> Tuple[str, int]:
     """
     Detecta la intención del usuario basada en la pregunta
+    Usa normalización centralizada para consistencia
     Returns:
         Tuple[str, int]: (intención, puntuación)
     """
-    question_normalized = normalize_text_robust(question)
+    question_normalized = normalize_text(question)
     logger.info(f"[DEBUG] Pregunta normalizada: '{question_normalized}'")
     intent_patterns = get_intent_patterns()
     intent_scores = {}

@@ -16,7 +16,7 @@ class AnalyticsManager:
     """Gestión de analytics y métricas del bot"""
 
     def __init__(self):
-        self.db_path = "data/analytics.db"
+        self.db_path = "src/data/analytics.db"
         self.events = []
         self.metrics = defaultdict(int)
         self.session_data = {}

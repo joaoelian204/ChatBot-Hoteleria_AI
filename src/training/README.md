@@ -74,10 +74,10 @@ class ModelTrainer:
 - **Multi-task Learning**: Entrenamiento en múltiples tareas
 
 #### 📚 Actualización de Base de Conocimiento
-- **Vectorización**: Conversión de documentos a embeddings
+- **Vectorización**: Conversión de contenido de BD a embeddings
 - **Indexación**: Creación de índices de búsqueda
-- **Actualización Incremental**: Adición de nuevos documentos
-- **Optimización**: Mejora de relevancia de búsquedas
+- **Actualización Incremental**: Sincronización con cambios en BD
+- **Optimización**: Mejora de relevancia de búsquedas basada en análisis
 
 #### 🎯 Entrenamiento Específico por Dominio
 - **Clasificación de Intenciones**: Mejora de detección de intenciones
@@ -92,8 +92,8 @@ from training.trainer import ModelTrainer
 # Crear instancia del entrenador
 trainer = ModelTrainer()
 
-# Preparar datos de entrenamiento
-trainer.prepare_training_data("documentos/")
+# Preparar datos de entrenamiento desde BD
+trainer.prepare_training_data_from_database()
 
 # Entrenar todos los modelos
 trainer.train_models("all")
@@ -111,16 +111,18 @@ else:
 
 **Funciones Principales**:
 
-#### `prepare_training_data(documents_dir)`
-- **Propósito**: Prepara datos para el entrenamiento
-- **Parámetros**:
-  - `documents_dir`: Directorio con documentos de entrenamiento
+#### `prepare_training_data_from_database()`
+- **Propósito**: Prepara datos para el entrenamiento desde la base de datos
 - **Funcionalidad**:
-  - Carga y limpia documentos
+  - Carga contenido desde BD SQLite
   - Divide en conjuntos de entrenamiento/validación
   - Preprocesa texto para modelos de IA
   - Valida calidad de datos
-  - Genera embeddings de entrenamiento
+  - Genera embeddings de entrenamiento basados en estructura de BD
+
+#### `prepare_training_data(documents_dir)` [DEPRECATED]
+- **Estado**: Método legacy mantenido para compatibilidad
+- **Recomendación**: Usar `prepare_training_data_from_database()` en su lugar
 
 #### `train_models(model_type="all")`
 - **Propósito**: Entrena modelos específicos o todos los modelos
@@ -292,7 +294,9 @@ training/
     "patience": 3
   },
   "data_config": {
-    "documents_dir": "documentos/",
+    "data_source": "database",
+    "database_path": "src/data/hotel_content.db",
+    "legacy_documents_dir": "documentos/",  # Solo para compatibilidad
     "preprocessing": {
       "clean_text": true,
       "normalize": true,
@@ -339,8 +343,8 @@ trainer = ModelTrainer()
 
 # Ejecutar entrenamiento completo
 try:
-    # Preparar datos
-    trainer.prepare_training_data("documentos/")
+    # Preparar datos desde BD (método moderno)
+    trainer.prepare_training_data_from_database()
     
     # Entrenar modelos
     trainer.train_models("all")

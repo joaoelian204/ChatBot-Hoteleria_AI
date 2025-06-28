@@ -37,10 +37,13 @@ def validate_message(message: str, user_id: int = None) -> Tuple[bool, str]:
     return True, "OK"
 
 def detect_intent(text: str) -> str:
-    """Detecta la intención del texto"""
-    text_lower = text.lower()
+    """
+    Detecta la intención del texto usando normalización
+    """
+    # Normalizar el texto de entrada
+    normalized_text = normalize_text(text)
     
-    # Detectar preguntas específicas sobre precios económicos
+    # Detectar preguntas específicas sobre precios económicos (con texto normalizado)
     economic_keywords = [
         'economica', 'barata', 'mas barata', 'menos cara', 'precio bajo', 
         'mas economica', 'la mas barata', 'la mas economica', 'mas barato',
@@ -49,35 +52,65 @@ def detect_intent(text: str) -> str:
         'habitacion barata', 'suite economica', 'alojamiento economico'
     ]
     
-    if any(keyword in text_lower for keyword in economic_keywords):
+    if any(keyword in normalized_text for keyword in economic_keywords):
         return "precios"
     
-    # Palabras clave para cada intención
+    # Palabras clave para cada intención (ya normalizadas, sin duplicados)
     intent_keywords = {
-        'habitaciones': ['habitacion', 'suite', 'cama', 'dormitorio', 'alojamiento', 'cuarto'],
-        'restaurantes': ['restaurante', 'menu', 'comida', 'gastronomia', 'cena', 'almuerzo', 'desayuno'],
-        'amenidades': ['piscina', 'gimnasio', 'spa', 'amenidad', 'actividad', 'servicio'],
-        'precios': ['precio', 'tarifa', 'costo', 'valor', 'cuanto', 'pagar'],
-        'contacto': ['contacto', 'telefono', 'email', 'reservar', 'reserva', 'llamar']
+        'habitaciones': [
+            'habitacion', 'suite', 'cama', 'dormitorio', 'alojamiento', 
+            'cuarto', 'room', 'ocupacion'
+        ],
+        'restaurantes': [
+            'restaurante', 'menu', 'comida', 'gastronomia', 'cena', 
+            'almuerzo', 'desayuno', 'bar', 'cafe', 'buffet', 'cocina'
+        ],
+        'amenidades': [
+            'piscina', 'gimnasio', 'spa', 'amenidad', 'actividad', 
+            'servicio', 'entretenimiento', 'deportes', 'wellness'
+        ],
+        'precios': [
+            'precio', 'tarifa', 'costo', 'valor', 'cuanto', 'pagar',
+            'factura', 'cobro', 'descuento', 'promocion'
+        ],
+        'contacto': [
+            'contacto', 'telefono', 'email', 'reservar', 'reserva', 
+            'llamar', 'direccion', 'ubicacion', 'como llegar'
+        ]
     }
     
+    # Buscar coincidencias en texto normalizado
     for intent, keywords in intent_keywords.items():
-        if any(keyword in text_lower for keyword in keywords):
+        if any(keyword in normalized_text for keyword in keywords):
             return intent
     
     return "general"
 
 def normalize_text(text: str) -> str:
-    """Normaliza el texto para búsqueda"""
+    """
+    Normaliza el texto para búsqueda y coincidencia de intenciones
+    - Convierte a minúsculas
+    - Remueve acentos y diacríticos
+    - Elimina signos de puntuación y caracteres especiales
+    - Normaliza espacios
+    """
+    if not text:
+        return ""
+    
     # Convertir a minúsculas
     text = text.lower()
     
-    # Remover acentos
+    # Remover acentos y diacríticos
     text = text.replace('á', 'a').replace('é', 'e').replace('í', 'i').replace('ó', 'o').replace('ú', 'u')
-    text = text.replace('ñ', 'n')
+    text = text.replace('ñ', 'n').replace('ü', 'u')
+    text = text.replace('à', 'a').replace('è', 'e').replace('ì', 'i').replace('ò', 'o').replace('ù', 'u')
+    text = text.replace('â', 'a').replace('ê', 'e').replace('î', 'i').replace('ô', 'o').replace('û', 'u')
     
-    # Remover caracteres especiales
-    text = re.sub(r'[^\w\s]', '', text)
+    # Remover signos de puntuación y caracteres especiales
+    text = re.sub(r'[^\w\s]', ' ', text)
+    
+    # Normalizar espacios múltiples
+    text = re.sub(r'\s+', ' ', text)
     
     return text.strip()
 

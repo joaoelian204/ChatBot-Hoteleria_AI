@@ -244,17 +244,19 @@ ANALYTICS_RETENTION_DAYS=365
 
 ### Archivos de Analytics
 ```
-data/
-├── analytics.json           # 📊 Datos principales de analytics
-├── user_interactions.json   # 👥 Interacciones de usuarios
-├── model_usage.json         # 🤖 Uso de modelos de IA
-├── performance_metrics.json # ⚡ Métricas de rendimiento
-├── business_metrics.json    # 💼 Métricas de negocio
-└── reports/                 # 📋 Reportes generados
-    ├── daily/
-    ├── weekly/
-    └── monthly/
+src/data/
+├── analytics.db             # 📊 Base de datos SQLite centralizada de analytics
+├── hotel_content.db         # 🏨 Base de datos principal del hotel
+└── models/                  # 🤖 Modelos de IA entrenados
+    └── training_log.json    # 📝 Log de entrenamiento
 ```
+
+### Estructura de Datos en Base de Datos
+La información de analytics se almacena directamente en la base de datos SQLite ubicada en `src/data/analytics.db`, proporcionando:
+- Mejor rendimiento y consistencia de datos
+- Capacidades avanzadas de consulta SQL
+- Integridad referencial
+- Respaldos y recuperación más eficientes
 
 ### Estructura de Datos JSON
 ```json

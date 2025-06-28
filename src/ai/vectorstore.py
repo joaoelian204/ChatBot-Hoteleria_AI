@@ -5,12 +5,31 @@ import os
 from typing import List
 
 from config.settings import settings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import Docx2txtLoader, PyPDFLoader, TextLoader
-from langchain_community.vectorstores import FAISS
+
+# Importar adaptador de base de datos - REQUERIDO
+from database.adapter import db_vectorstore_adapter
 from utils.logger import logger
 
+# Importaciones de langchain - condicionales para evitar errores
+try:
+    from langchain_community.document_loaders import (
+        Docx2txtLoader,
+        PyPDFLoader,
+        TextLoader,
+    )
+    from langchain_community.vectorstores import FAISS
+    from langchain_text_splitters import RecursiveCharacterTextSplitter
+    LANGCHAIN_AVAILABLE = True
+    logger.info("✅ Dependencias de LangChain cargadas correctamente")
+except ImportError as e:
+    logger.warning(f"⚠️ Dependencias de LangChain no disponibles: {e}")
+    logger.info("💡 Instala: pip install langchain langchain-community faiss-cpu")
+    LANGCHAIN_AVAILABLE = False
+
 from ai.models import ai_models
+
+DATABASE_AVAILABLE = True
+logger.info("🗄️ Sistema configurado para usar base de datos SQLite")
 
 
 class VectorStoreManager:
@@ -18,13 +37,25 @@ class VectorStoreManager:
 
     def __init__(self):
         self.vectorstore = None
-        self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=settings.CHUNK_SIZE,
-            chunk_overlap=settings.CHUNK_OVERLAP
-        )
         self._documents_processed = False
         self._chunks = []
-        logger.info("🔄 VectorStore inicializado en modo lazy loading")
+        # Sistema configurado para usar SIEMPRE base de datos SQLite
+        self.use_database = True
+
+        # Inicializar text_splitter solo si langchain está disponible
+        if LANGCHAIN_AVAILABLE:
+            self.text_splitter = RecursiveCharacterTextSplitter(
+                chunk_size=settings.CHUNK_SIZE,
+                chunk_overlap=settings.CHUNK_OVERLAP
+            )
+            logger.info("🗄️ VectorStore inicializado - MODO BASE DE DATOS")
+            logger.info("🔄 VectorStore configurado en modo lazy loading")
+        else:
+            self.text_splitter = None
+            logger.warning(
+                "⚠️ VectorStore inicializado SIN dependencias de LangChain")
+            logger.info(
+                "💡 Funcionalidad limitada - instala las dependencias para funcionalidad completa")
 
     def _load_document(self, file_path: str) -> List:
         """Carga un documento según su extensión"""
@@ -51,10 +82,65 @@ class VectorStoreManager:
             return []
 
     def _prepare_documents(self):
-        """Prepara los documentos sin cargar modelos pesados"""
+        """Prepara los documentos desde la base de datos SQLite"""
         if self._documents_processed:
             return
-            
+
+        # SIEMPRE usar base de datos como fuente principal
+        self._prepare_documents_from_database()
+
+    def _prepare_documents_from_database(self):
+        """Prepara documentos desde la base de datos SQLite"""
+        try:
+            logger.info(
+                "🗄️ Cargando documentos desde la base de datos SQLite...")
+            documentos_db = db_vectorstore_adapter.get_all_documents_for_vectorstore()
+
+            if not documentos_db:
+                logger.warning(
+                    "⚠️ No se encontraron documentos en la base de datos")
+                logger.info(
+                    "💡 Ejecuta: python migrate_to_database.py --migrate")
+                return
+
+            # Convertir a formato Document de langchain
+            try:
+                from langchain_core.documents import Document
+            except ImportError:
+                try:
+                    from langchain.schema import Document
+                except ImportError:
+                    logger.error(
+                        "❌ No se puede importar Document de langchain")
+                    return
+
+            all_docs = []
+
+            for doc_data in documentos_db:
+                doc = Document(
+                    page_content=doc_data['page_content'],
+                    metadata=doc_data['metadata']
+                )
+                all_docs.append(doc)
+
+            logger.info(f"📄 Documentos de BD obtenidos: {len(all_docs)}")
+
+            # Dividir documentos en chunks
+            self._chunks = self.text_splitter.split_documents(all_docs)
+            logger.info(
+                f"📄 Documentos de BD divididos en {len(self._chunks)} chunks")
+            self._documents_processed = True
+
+        except Exception as e:
+            logger.error(f"❌ Error al preparar documentos desde BD: {e}")
+            logger.error(
+                "� Asegúrate de ejecutar la migración: python migrate_to_database.py --migrate")
+            # No hacer fallback a archivos - requerir base de datos
+            raise RuntimeError(
+                "Base de datos requerida pero no disponible. Ejecuta la migración primero.")
+
+    def _prepare_documents_from_files(self):
+        """Prepara documentos desde archivos (método original)"""
         all_docs = []
 
         if not settings.DOCUMENTOS_DIR.exists():
@@ -83,10 +169,10 @@ class VectorStoreManager:
         """Crea el vectorstore SOLO cuando sea necesario (modo síncrono - solo para carga inmediata)"""
         if self.vectorstore is not None:
             return  # Ya está creado
-            
+
         # Preparar documentos si no se ha hecho
         self._prepare_documents()
-        
+
         if not self._chunks:
             logger.warning("⚠️ No hay chunks disponibles para crear vectorstore")
             return
@@ -110,24 +196,26 @@ class VectorStoreManager:
             logger.error(f"❌ Error creando vectorstore: {e}")
 
     def search_context(self, question: str, k: int = 3) -> List[str]:
-        """Busca contexto relevante para una pregunta (solo para modo inmediato)"""
+        """Busca contexto relevante para una pregunta"""
         # Verificar si lazy loading está habilitado
         if ai_models.use_lazy_loading:
             logger.warning("⚠️ Lazy loading habilitado - usa search_context_async() en su lugar")
             return []
-            
+
         # Si no existe el vectorstore, crearlo ahora (solo modo inmediato)
         if not self.vectorstore:
-            logger.info("🔄 Vectorstore no disponible, inicializando...")
+            logger.info(
+                "🔄 Vectorstore no disponible, inicializando desde base de datos...")
             self._create_vectorstore()
-            
+
         if not self.vectorstore:
             logger.warning("❌ Vectorstore no disponible después de intentar crearlo")
             return []
 
         try:
             docs = self.vectorstore.similarity_search(question, k=k)
-            logger.info(f"✅ Encontrados {len(docs)} documentos relevantes")
+            logger.info(
+                f"✅ Encontrados {len(docs)} documentos relevantes desde BD")
             return [doc.page_content for doc in docs]
         except Exception as e:
             logger.error(f"❌ Error en búsqueda de contexto: {e}")
@@ -156,10 +244,10 @@ class VectorStoreManager:
         """Crea el vectorstore de forma asíncrona (para lazy loading)"""
         if self.vectorstore is not None:
             return  # Ya está creado
-            
+
         # Preparar documentos si no se ha hecho
         self._prepare_documents()
-        
+
         if not self._chunks:
             logger.warning("⚠️ No hay chunks disponibles para crear vectorstore")
             return

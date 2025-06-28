@@ -61,38 +61,45 @@ stats = ai_models.get_stats()
 
 ### 📚 `vectorstore.py` - Base de Conocimiento Vectorial
 
-**Propósito**: Gestiona la base de conocimiento vectorial para búsquedas semánticas en documentos del hotel.
+**Propósito**: Gestiona la base de conocimiento vectorial para búsquedas semánticas utilizando **base de datos SQLite** como fuente principal de documentos.
 
 **Estructura**:
 - **VectorStoreManager**: Clase principal para gestión del vectorstore
-- **Carga de Documentos**: Soporte para PDF, TXT, DOCX
-- **Búsqueda Semántica**: Búsqueda por similitud vectorial
-- **Gestión de Chunks**: División inteligente de documentos
+- **Integración con BD**: Uso directo de base de datos SQLite
+- **Búsqueda Semántica**: Búsqueda por similitud vectorial con FAISS
+- **Gestión de Chunks**: División inteligente de documentos desde BD
 
 **Funcionalidades**:
-- ✅ Carga de múltiples formatos de documentos
+- ✅ **Carga desde base de datos SQLite** (método principal)
 - ✅ División automática en chunks optimizados
 - ✅ Búsqueda semántica con FAISS
-- ✅ Actualización dinámica de conocimiento
+- ✅ Actualización dinámica de conocimiento desde BD
 - ✅ Gestión de memoria con lazy loading
 - ✅ Estadísticas de uso y rendimiento
+- ✅ Fallback automático en caso de errores
 
-**Uso**:
+**Métodos Principales**:
 ```python
 from ai.vectorstore import vectorstore_manager
 
-# Búsqueda síncrona
-results = vectorstore_manager.search_context("¿Qué habitaciones tienen?", k=3)
+# Búsqueda asíncrona (recomendado para lazy loading)
+results = await vectorstore_manager.search_context_async("¿Qué habitaciones tienen?", k=3)
 
-# Búsqueda asíncrona (recomendado)
-results = await vectorstore_manager.search_context_async("¿Cuál es el precio?", k=3)
+# Búsqueda síncrona (solo para modo inmediato)
+results = vectorstore_manager.search_context("¿Cuál es el precio?", k=3)
 
-# Actualizar conocimiento
+# Actualizar conocimiento desde base de datos
 vectorstore_manager.update_knowledge()
 
-# Añadir documento específico
-vectorstore_manager.add_document("nuevo_documento.txt")
+# Obtener estadísticas
+stats = vectorstore_manager.get_stats()
 ```
+
+**Configuración**:
+- **Modo por Defecto**: Base de datos SQLite
+- **Lazy Loading**: Activado para optimizar memoria
+- **Chunk Size**: Configurable desde settings
+- **Embedding Model**: Sentence Transformers
 
 **Dependencias**:
 - `faiss`: Búsqueda vectorial eficiente
@@ -252,32 +259,47 @@ stats = resource_manager.get_stats()
 
 ### 🛡️ `fallback_handler.py` - Manejo de Fallbacks
 
-**Propósito**: Proporciona respuestas de respaldo cuando los modelos principales fallan o no están disponibles.
+**Propósito**: Proporciona respuestas de respaldo utilizando **base de datos SQLite** como fuente principal de información cuando los modelos de IA no están disponibles.
 
 **Estructura**:
-- **Respuestas de Fallback**: Respuestas predefinidas para casos de error
-- **Detección de Errores**: Identificación automática de fallos
-- **Recuperación**: Mecanismos de recuperación automática
-- **Logging de Errores**: Registro detallado de fallos
+- **Proxy a Base de Datos**: Redirección directa a funciones de BD
+- **Respuestas Contextuales**: Respuestas específicas según tipo de consulta
+- **Compatibilidad**: Funciones de compatibilidad para testing
+- **Gestión de Errores**: Manejo robusto de errores
 
 **Funcionalidades**:
-- ✅ Respuestas de fallback predefinidas
-- ✅ Detección automática de errores
-- ✅ Recuperación automática de servicios
-- ✅ Logging detallado de errores
-- ✅ Respuestas contextuales de fallback
-- ✅ Notificaciones de estado del sistema
+- ✅ **Integración completa con base de datos SQLite**
+- ✅ Respuestas contextuales por tipo de consulta
+- ✅ Funciones de compatibilidad para sistema de testing
+- ✅ Análisis inteligente de consultas
+- ✅ Fallback a respuestas por defecto
+- ✅ Logging detallado de operaciones
 
-**Uso**:
+**Funciones Principales**:
 ```python
-from ai.fallback_handler import handle_fallback
+from ai.fallback_handler import (
+    generate_fallback_response,
+    get_room_info_from_documents,
+    get_restaurant_info_from_documents,
+    get_amenities_info_from_documents,
+    get_contact_info_from_documents,
+    get_cheapest_room_info,
+    get_most_expensive_room_info
+)
 
-# Manejar fallback automáticamente
-response = await handle_fallback("consulta_usuario", error_type="model_error")
+# Generar respuesta de fallback automática
+response = generate_fallback_response("¿Qué habitaciones tienen?")
 
-# Obtener respuesta de fallback específica
-fallback_response = get_fallback_response("habitaciones")
+# Obtener información específica
+room_info = get_room_info_from_documents()
+restaurant_info = get_restaurant_info_from_documents()
+cheapest_room = get_cheapest_room_info()
 ```
+
+**Integración**:
+- **Fuente Principal**: Base de datos SQLite vía `database.fallback_main`
+- **Método de Detección**: Análisis de palabras clave en consultas
+- **Fallback por Defecto**: Respuesta de bienvenida inteligente
 
 **Dependencias**:
 - `config.settings`: Configuración del sistema
